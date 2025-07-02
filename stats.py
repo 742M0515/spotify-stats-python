@@ -66,3 +66,4 @@ if __name__ == "__main__":
     with open(output_path, 'w') as f:
         json.dump(stats, f, indent=2)
     print(f"Spotify stats saved to {output_path}")
+
