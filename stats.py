@@ -73,7 +73,11 @@ def get_spotify_stats():
 if __name__ == "__main__":
     stats = get_spotify_stats()
     # Output to JSON file in the main project directory
-    output_path = "../tazmosis.tk/src/data/spotify-stats.json"
-    with open(output_path, 'w') as f:
-        json.dump(stats, f, indent=2)
-    print(f"Spotify stats saved to {output_path}")
+import os
+
+output_dir = "output"
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, "spotify-stats.json")
+with open(output_path, 'w') as f:
+    json.dump(stats, f, indent=2)
+print(f"Spotify stats saved to {output_path}")
