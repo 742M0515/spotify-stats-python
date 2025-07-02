@@ -1,0 +1,45 @@
+name: Update Spotify Stats
+on:
+  schedule:
+    - cron: '0 */1 * * *' # Runs every hour
+  workflow_dispatch: # Allows manual trigger
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false # Ensure credentials are not persisted to avoid push issues
+          fetch-options: depth=0 # Fetch all history for proper commit
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install spotipy
+      - name: List directory structure
+        run: ls -R # Debug step to see the repository structure
+      - name: Run script
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+        run: |
+          python stats.py || echo "Script failed, check logs for details"
+      - name: Check for output file
+        run: |
+          if [ -f "spotify-stats.json" ]; then
+            echo "Output file created successfully"
+            cat spotify-stats.json
+          else
+            echo "Output file not found, script may have failed"
+            exit 1
+          fi
+      - name: Commit and push updated JSON
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add spotify-stats.json
+          git commit -m "Update Spotify stats" || echo "No changes to commit"
+          git push || echo "Push failed, check permissions or credentials"
