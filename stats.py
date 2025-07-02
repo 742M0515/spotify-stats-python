@@ -3,6 +3,7 @@ from spotipy.oauth2 import SpotifyOAuth
 import json
 import os
 import sys
+import time
 
 def get_spotify_stats():
     # Read credentials from environment variables for security
@@ -15,21 +16,27 @@ def get_spotify_stats():
     if not REFRESH_TOKEN:
         print("Error: SPOTIFY_REFRESH_TOKEN must be set as an environment variable for non-interactive authentication.")
         sys.exit(1)
-    
+
     REDIRECT_URI = 'http://127.0.0.1:5173/callback/'  # Still needed for token refresh context
     SCOPE = 'user-library-read user-top-read user-read-recently-played user-read-playback-state'
 
-    # Use refresh token for authentication
+    # Updated token_info to fix the KeyError: 'expires_at'
     token_info = {
         'refresh_token': REFRESH_TOKEN,
-        'token_type': 'Bearer',
-        'scope': SCOPE
+        'access_token': '',  # Spotipy will fetch a new token using the refresh token
+        'expires_in': 0,     # Expires immediately so Spotipy refreshes
+        'expires_at': int(time.time()),  # Set to now so Spotipy refreshes immediately
+        'scope': SCOPE,
+        'token_type': 'Bearer'
     }
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID,
-                                                   client_secret=CLIENT_SECRET,
-                                                   redirect_uri=REDIRECT_URI,
-                                                   scope=SCOPE,
-                                                   cache_handler=spotipy.MemoryCacheHandler(token_info=token_info)))
+
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        redirect_uri=REDIRECT_URI,
+        scope=SCOPE,
+        cache_handler=spotipy.MemoryCacheHandler(token_info=token_info)
+    ))
 
     # Prepare data dictionary for JSON output
     stats_data = {}
@@ -73,11 +80,9 @@ def get_spotify_stats():
 if __name__ == "__main__":
     stats = get_spotify_stats()
     # Output to JSON file in the main project directory
-import os
-
-output_dir = "output"
-os.makedirs(output_dir, exist_ok=True)
-output_path = os.path.join(output_dir, "spotify-stats.json")
-with open(output_path, 'w') as f:
-    json.dump(stats, f, indent=2)
-print(f"Spotify stats saved to {output_path}")
+    output_dir = "output"
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, "spotify-stats.json")
+    with open(output_path, 'w') as f:
+        json.dump(stats, f, indent=2)
+    print(f"Spotify stats saved to {output_path}")
