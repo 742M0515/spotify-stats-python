@@ -8,17 +8,28 @@ def get_spotify_stats():
     # Read credentials from environment variables for security
     CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
     CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
+    REFRESH_TOKEN = os.getenv('SPOTIFY_REFRESH_TOKEN')
     if not CLIENT_ID or not CLIENT_SECRET:
         print("Error: SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET must be set as environment variables.")
         sys.exit(1)
+    if not REFRESH_TOKEN:
+        print("Error: SPOTIFY_REFRESH_TOKEN must be set as an environment variable for non-interactive authentication.")
+        sys.exit(1)
     
-    REDIRECT_URI = 'http://127.0.0.1:5173/callback/'
+    REDIRECT_URI = 'http://127.0.0.1:5173/callback/'  # Still needed for token refresh context
     SCOPE = 'user-library-read user-top-read user-read-recently-played user-read-playback-state'
 
+    # Use refresh token for authentication
+    token_info = {
+        'refresh_token': REFRESH_TOKEN,
+        'token_type': 'Bearer',
+        'scope': SCOPE.split()
+    }
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID,
                                                    client_secret=CLIENT_SECRET,
                                                    redirect_uri=REDIRECT_URI,
-                                                   scope=SCOPE))
+                                                   scope=SCOPE,
+                                                   cache_handler=spotipy.MemoryCacheHandler(token_info=token_info)))
 
     # Prepare data dictionary for JSON output
     stats_data = {}
@@ -61,9 +72,8 @@ def get_spotify_stats():
 
 if __name__ == "__main__":
     stats = get_spotify_stats()
-    # Output to JSON file relative to the current directory
-    output_path = "spotify-stats.json"
+    # Output to JSON file in the main project directory
+    output_path = "../tazmosis.tk/src/data/spotify-stats.json"
     with open(output_path, 'w') as f:
         json.dump(stats, f, indent=2)
     print(f"Spotify stats saved to {output_path}")
-
