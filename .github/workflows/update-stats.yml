@@ -20,12 +20,30 @@ jobs:
           pip install spotipy
       - name: List directory structure
         run: ls -R # Debug step to see the repository structure
-      - name: Run script
+      - name: Check environment variables
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
         run: |
-          python stats.py || echo "Script failed, check logs for details"
+          if [ -z "$SPOTIFY_CLIENT_ID" ] || [ -z "$SPOTIFY_CLIENT_SECRET" ]; then
+            echo "Error: Spotify credentials are not set. Check GitHub Secrets."
+            exit 1
+          else
+            echo "Spotify credentials are set."
+          fi
+      - name: Run script with detailed output
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+        run: |
+          echo "Running stats.py..."
+          python stats.py > script_output.log 2>&1 || {
+            echo "Script failed. Displaying output and error logs:"
+            cat script_output.log
+            exit 1
+          }
+          echo "Script executed. Displaying output:"
+          cat script_output.log
       - name: Check for output file
         run: |
           if [ -f "spotify-stats.json" ]; then
@@ -33,6 +51,8 @@ jobs:
             cat spotify-stats.json
           else
             echo "Output file not found, script may have failed"
+            echo "Current directory contents:"
+            ls -la
             exit 1
           fi
       - name: Commit and push updated JSON
