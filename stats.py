@@ -61,8 +61,8 @@ def get_spotify_stats():
 
 if __name__ == "__main__":
     stats = get_spotify_stats()
-    # Output to JSON file in the Astro project
-    output_path = "/home/tazmosis/Git/tazmosis.tk/src/data/spotify-stats.json"
+    # Output to JSON file relative to the current directory
+    output_path = "spotify-stats.json"
     with open(output_path, 'w') as f:
         json.dump(stats, f, indent=2)
     print(f"Spotify stats saved to {output_path}")
