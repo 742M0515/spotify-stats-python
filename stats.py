@@ -23,7 +23,7 @@ def get_spotify_stats():
     token_info = {
         'refresh_token': REFRESH_TOKEN,
         'token_type': 'Bearer',
-        'scope': SCOPE.split()
+        'scope': SCOPE
     }
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID,
                                                    client_secret=CLIENT_SECRET,
