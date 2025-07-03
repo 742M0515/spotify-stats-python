@@ -79,9 +79,6 @@ def get_spotify_stats():
 
 if __name__ == "__main__":
     stats = get_spotify_stats()
-    # Output to JSON file in the main project directory
-
-import os
 output_dir = "output"
 os.makedirs(output_dir, exist_ok=True)
 output_path = os.path.join(output_dir, "spotify-stats.json")
