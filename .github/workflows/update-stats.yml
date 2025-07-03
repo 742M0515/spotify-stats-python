@@ -48,19 +48,19 @@ jobs:
           cat script_output.log
       - name: Check for output file
         run: |
-          if [ -f "spotify-stats.json" ]; then
+          if [ -f "output/spotify-stats.json" ]; then
             echo "Output file created successfully"
-            cat spotify-stats.json
-          else
+            cat output/spotify-stats.json
+           else
             echo "Output file not found, script may have failed"
             echo "Current directory contents:"
             ls -la
             exit 1
           fi
       - name: Commit and push updated JSON
-        run: |
+        run:  |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add spotify-stats.json
+          git add output/spotify-stats.json
           git commit -m "Update Spotify stats" || echo "No changes to commit"
           git push || echo "Push failed, check permissions or credentials"
