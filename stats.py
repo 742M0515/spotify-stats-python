@@ -42,38 +42,58 @@ def get_spotify_stats():
     stats_data = {}
 
     # Now Playing
-    now_playing = sp.current_playback()
-    if now_playing and now_playing['is_playing']:
-        track_name = now_playing['item']['name']
-        artists = ', '.join([artist['name'] for artist in now_playing['item']['artists']])
-        stats_data['now_playing'] = f"{track_name} - {artists}"
-    else:
-        stats_data['now_playing'] = "Nothing currently playing"
+    try:
+        now_playing = sp.current_playback()
+        if now_playing and now_playing['is_playing']:
+            track_name = now_playing['item']['name']
+            artists = ', '.join([artist['name'] for artist in now_playing['item']['artists']])
+            stats_data['now_playing'] = f"{track_name} - {artists}"
+        else:
+            stats_data['now_playing'] = "Nothing currently playing"
+    except Exception as e:
+        print(f"Error fetching current playback: {str(e)}")
+        stats_data['now_playing'] = "Error fetching data"
 
     # Top Artists
-    top_artists = sp.current_user_top_artists(limit=5, time_range='medium_term')
-    stats_data['top_artists'] = [artist['name'] for artist in top_artists['items']]
+    try:
+        top_artists = sp.current_user_top_artists(limit=5, time_range='medium_term')
+        stats_data['top_artists'] = [artist['name'] for artist in top_artists['items']]
+    except Exception as e:
+        print(f"Error fetching top artists: {str(e)}")
+        stats_data['top_artists'] = ["Error fetching data"]
 
     # Top Songs
-    top_tracks = sp.current_user_top_tracks(limit=5, time_range='medium_term')
-    stats_data['top_songs'] = [
-        {'name': song['name'], 'artists': ', '.join([artist['name'] for artist in song['artists']])}
-        for song in top_tracks['items']
-    ]
+    try:
+        top_tracks = sp.current_user_top_tracks(limit=5, time_range='medium_term')
+        stats_data['top_songs'] = [
+            {'name': song['name'], 'artists': ', '.join([artist['name'] for artist in song['artists']])}
+            for song in top_tracks['items']
+        ]
+    except Exception as e:
+        print(f"Error fetching top songs: {str(e)}")
+        stats_data['top_songs'] = [{'name': "Error fetching data", 'artists': ""}]
 
     # Top Albums (corrected from tracks to albums)
-    top_albums = sp.current_user_top_tracks(limit=5, time_range='medium_term')
-    stats_data['top_albums'] = [
-        {'name': album['album']['name'], 'artists': ', '.join([artist['name'] for artist in album['artists']])}
-        for album in top_albums['items']
-    ]
+    try:
+        top_albums = sp.current_user_top_tracks(limit=5, time_range='medium_term')
+        stats_data['top_albums'] = [
+            {'name': album['album']['name'], 'artists': ', '.join([artist['name'] for artist in album['artists']])}
+            for album in top_albums['items']
+        ]
+    except Exception as e:
+        print(f"Error fetching top albums: {str(e)}")
+        stats_data['top_albums'] = [{'name': "Error fetching data", 'artists': ""}]
 
     # Recently Played
-    recently_played = sp.current_user_recently_played(limit=5)
-    stats_data['recently_played'] = [
-        {'name': track['track']['name'], 'artists': ', '.join([artist['name'] for artist in track['track']['artists']])}
-        for track in recently_played['items']
-    ]
+    try:
+        recently_played = sp.current_user_recently_played(limit=5)
+        stats_data['recently_played'] = [
+            {'name': track['track']['name'], 'artists': ', '.join([artist['name'] for artist in track['track']['artists']])}
+            for track in recently_played['items']
+        ]
+    except Exception as e:
+        print(f"Error fetching recently played: {str(e)}")
+        stats_data['recently_played'] = [{'name': "Error fetching data", 'artists': ""}]
 
     return stats_data
 
