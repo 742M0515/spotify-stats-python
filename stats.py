@@ -23,6 +23,7 @@ def get_spotify_stats():
     # Updated token_info to fix the KeyError: 'expires_at'
     token_info = {
         'refresh_token': REFRESH_TOKEN,
+<<<<<<< HEAD
         'access_token': '',  # Spotipy will fetch a new token using the refresh token
         'expires_in': 0,     # Expires immediately so Spotipy refreshes
         'expires_at': int(time.time()),  # Set to now so Spotipy refreshes immediately
@@ -37,6 +38,36 @@ def get_spotify_stats():
         scope=SCOPE,
         cache_handler=spotipy.MemoryCacheHandler(token_info=token_info)
     ))
+=======
+        'token_type': 'Bearer',
+        'scope': SCOPE
+    }
+    try:
+        # Custom cache handler to ensure scope is a string
+        class CustomCacheHandler(spotipy.cache_handler.CacheHandler):
+            def __init__(self, token_info):
+                self.token_info = token_info if token_info else {}
+                if 'scope' in self.token_info and isinstance(self.token_info['scope'], list):
+                    self.token_info['scope'] = ' '.join(self.token_info['scope'])
+            
+            def get_cached_token(self):
+                return self.token_info
+            
+            def save_token_to_cache(self, token_info):
+                self.token_info = token_info if token_info else {}
+                if 'scope' in self.token_info and isinstance(self.token_info['scope'], list):
+                    self.token_info['scope'] = ' '.join(self.token_info['scope'])
+        
+        auth_manager = SpotifyOAuth(client_id=CLIENT_ID,
+                                    client_secret=CLIENT_SECRET,
+                                    redirect_uri=REDIRECT_URI,
+                                    scope=SCOPE,
+                                    cache_handler=CustomCacheHandler(token_info))
+        sp = spotipy.Spotify(auth_manager=auth_manager)
+    except Exception as e:
+        print(f"Error during Spotify authentication: {str(e)}")
+        sys.exit(1)
+>>>>>>> 5401b03 (build)
 
     # Prepare data dictionary for JSON output
     stats_data = {}

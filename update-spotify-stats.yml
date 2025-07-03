@@ -1,0 +1,62 @@
+name: Update Spotify Stats
+
+on:
+  schedule:
+    - cron: '0 */1 * * *'  # Runs every hour
+  workflow_dispatch:         # Allows manual triggering
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install spotipy
+
+      - name: Run Spotify Stats Script
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+        run: |
+          echo "Running stats.py..."
+          python stats.py > script_output.log 2>&1 || {
+            echo "Script failed. Displaying output and error logs:"
+            cat script_output.log
+            exit 1
+          }
+          echo "Script executed. Displaying output:"
+          cat script_output.log
+
+      - name: Check Output File
+        run: |
+          if [ -f "output/spotify-stats.json" ]; then
+            echo "Output file created successfully"
+            cat output/spotify-stats.json
+          else
+            echo "Error: Output file not found!"
+            exit 1
+          fi
+
+      - name: Commit Spotify Stats File
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add output/spotify-stats.json
+          git commit -m "Update Spotify stats JSON [ci skip]" || echo "No changes to commit"
+          git push origin main
+
+      - name: Upload Spotify Stats Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotify-stats
+          path: output/spotify-stats.json
