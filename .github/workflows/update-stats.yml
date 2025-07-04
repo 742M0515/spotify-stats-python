@@ -54,7 +54,7 @@ jobs:
           git add output/spotify-stats.json
           git commit -m "Update Spotify stats JSON [ci skip]" || echo "No changes to commit"
           git pull origin main
-          git push https://x-access-token:${{ secrets.PUSH_TOKEN }}@github.com/742M0515/spotify-stats-python.git main
+          git push origin main --force
 
       - name: Upload Spotify Stats Artifact
         uses: actions/upload-artifact@v4
